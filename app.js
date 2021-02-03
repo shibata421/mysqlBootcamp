@@ -2,28 +2,31 @@ const express = require("express");
 const fs = require("fs");
 const mysql = require("mysql");
 
-const userData = JSON.parse(fs.readFileSync("./user.json"));
+const { host, user, password, database } = JSON.parse(fs.readFileSync("./user.json"));
 const app = express();
 const port = 3000;
 
 const connection = mysql.createConnection({
-  host: userData.host,
-  user: userData.username,
-  password: userData.password,
-  database: userData.database
+  host,
+  user,
+  password,
+  database
 });
+
+app.set('view engine', 'ejs');
 
 app.get("/", (req, res) => {
     const q = "SELECT COUNT(*) as total FROM users";
     connection.query(q, (err, results) => {
         if(err) { throw err }
-        res.send("We have " + results[0].total + " users");
+        const total = results[0].total
+        res.render('home', { total });
     })
 });
 
 app.get("/joke", (req, res) => {
   const joke =
-    "What do you call a dog that does magic tricks? A labracadabrador.";
+    "<b>What do you call a dog that does magic tricks?</b> <i>A labracadabrador.</i>";
   res.send(joke);
 });
 
